@@ -12,7 +12,7 @@ body { font-family:'Inter',sans-serif; display:flex; justify-content:center; ali
 .card {
   width:100%; padding:36px 48px;
   background:#141414; border-radius:20px; border:1px solid #2a2a2a;
-  display:flex; flex-direction:column; gap:20px;
+  display:flex; flex-direction:column; gap:24px;
   position:relative; overflow:hidden;
 }
 .card::before {
@@ -25,23 +25,29 @@ body { font-family:'Inter',sans-serif; display:flex; justify-content:center; ali
 .city { font-size:10px; font-weight:400; letter-spacing:0.25em; color:#ff66a8; text-transform:uppercase; }
 .label { font-size:11px; font-weight:500; letter-spacing:0.3em; color:#ffff00; text-transform:uppercase; text-shadow:0 0 8px rgba(255,255,0,0.7); }
 
-.current-row { display:flex; align-items:center; gap:16px; }
-.weather-icon { font-size:36px; line-height:1; }
-.current-info { display:flex; flex-direction:column; gap:2px; }
-.current-temp { font-family:'DM Serif Display',serif; font-size:48px; line-height:1; color:#f0f0f0; letter-spacing:-2px; }
-.current-temp sup { font-size:20px; vertical-align:super; color:#888; }
-.current-desc { font-size:10px; letter-spacing:0.2em; color:#00cfff; text-transform:uppercase; text-shadow:0 0 8px rgba(0,207,255,0.6); }
+.main-row { display:flex; align-items:center; justify-content:space-between; gap:24px; }
 
-.divider { height:1px; background:#888; opacity:0.4; }
+/* 左：今日 */
+.today { display:flex; align-items:center; gap:16px; }
+.cur-icon { font-size:64px; line-height:1; }
+.cur-info { display:flex; flex-direction:column; gap:4px; }
+.cur-temp { font-family:'DM Serif Display',serif; font-size:80px; line-height:1; color:#f0f0f0; letter-spacing:-4px; }
+.cur-temp sup { font-size:28px; vertical-align:super; color:#888; }
+.cur-desc { font-size:10px; letter-spacing:0.2em; color:#00cfff; text-transform:uppercase; text-shadow:0 0 8px rgba(0,207,255,0.6); }
+.cur-range { font-size:11px; color:#555; letter-spacing:0.05em; }
+.cur-range span { color:#888; }
 
-.forecast-row { display:flex; justify-content:space-between; gap:10px; }
-.forecast-day { flex:1; display:flex; flex-direction:column; align-items:center; gap:6px; padding:12px 8px; background:#1a1a1a; border-radius:12px; border:1px solid #2a2a2a; }
-.fc-label { font-size:9px; letter-spacing:0.2em; color:#00cfff; text-transform:uppercase; text-shadow:0 0 6px rgba(0,207,255,0.5); }
-.fc-icon { font-size:24px; }
-.fc-temps { display:flex; gap:6px; align-items:center; }
-.fc-high { font-size:13px; font-weight:500; color:#f0f0f0; }
-.fc-low { font-size:11px; font-weight:300; color:#555; }
-.fc-precip { font-size:9px; color:#39ff14; letter-spacing:0.1em; text-shadow:0 0 6px rgba(57,255,20,0.5); }
+/* 仕切り */
+.divider-v { width:1px; height:80px; background:#2a2a2a; flex-shrink:0; }
+
+/* 右：明日 */
+.tomorrow { display:flex; flex-direction:column; align-items:center; gap:8px; min-width:90px; }
+.tmr-label { font-size:9px; letter-spacing:0.25em; color:#ffff00; text-transform:uppercase; text-shadow:0 0 6px rgba(255,255,0,0.5); }
+.tmr-icon { font-size:36px; line-height:1; }
+.tmr-temps { display:flex; gap:8px; align-items:baseline; }
+.tmr-high { font-size:20px; font-weight:500; color:#f0f0f0; }
+.tmr-low { font-size:14px; font-weight:300; color:#555; }
+.tmr-precip { font-size:10px; color:#39ff14; letter-spacing:0.1em; text-shadow:0 0 6px rgba(57,255,20,0.5); }
 
 .bottom-row { display:flex; align-items:center; gap:12px; border-top:1px solid #888; padding-top:20px; opacity:0.8; }
 .dot { width:6px; height:6px; border-radius:50%; background:#39ff14; box-shadow:0 0 6px rgba(57,255,20,0.8); flex-shrink:0; }
@@ -54,15 +60,26 @@ body { font-family:'Inter',sans-serif; display:flex; justify-content:center; ali
     <div class="city">Kofu, Japan</div>
     <div class="label">Weather</div>
   </div>
-  <div class="current-row">
-    <div class="weather-icon" id="cur-icon">—</div>
-    <div class="current-info">
-      <div class="current-temp" id="cur-temp">—<sup>°</sup></div>
-      <div class="current-desc" id="cur-desc">Loading...</div>
+  <div class="main-row">
+    <div class="today">
+      <div class="cur-icon" id="cur-icon">—</div>
+      <div class="cur-info">
+        <div class="cur-temp" id="cur-temp">—<sup>°</sup></div>
+        <div class="cur-desc" id="cur-desc">Loading...</div>
+        <div class="cur-range" id="cur-range"></div>
+      </div>
+    </div>
+    <div class="divider-v"></div>
+    <div class="tomorrow">
+      <div class="tmr-label">Tomorrow</div>
+      <div class="tmr-icon" id="tmr-icon">—</div>
+      <div class="tmr-temps">
+        <span class="tmr-high" id="tmr-high">—°</span>
+        <span class="tmr-low" id="tmr-low">—°</span>
+      </div>
+      <div class="tmr-precip" id="tmr-precip">—%</div>
     </div>
   </div>
-  <div class="divider"></div>
-  <div class="forecast-row" id="forecast-row"></div>
   <div class="bottom-row">
     <div class="dot"></div>
     <div class="updated" id="updated">—</div>
@@ -70,7 +87,6 @@ body { font-family:'Inter',sans-serif; display:flex; justify-content:center; ali
 </div>
 <script>
 var LAT=35.6635, LON=138.5684;
-var weekdays=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
 
 function weatherInfo(code){
   if(code===0)  return {icon:'☀️', desc:'Clear'};
@@ -93,7 +109,7 @@ async function fetchWeather(){
       +'&current=temperature_2m,weathercode'
       +'&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
       +'&timezone=Asia%2FTokyo'
-      +'&forecast_days=4';
+      +'&forecast_days=2';
     var res=await fetch(url);
     var data=await res.json();
 
@@ -103,32 +119,21 @@ async function fetchWeather(){
     document.getElementById('cur-temp').innerHTML=Math.round(cur.temperature_2m)+'<sup>°</sup>';
     document.getElementById('cur-desc').textContent=info.desc;
 
+    var todayHigh=Math.round(data.daily.temperature_2m_max[0]);
+    var todayLow=Math.round(data.daily.temperature_2m_min[0]);
+    document.getElementById('cur-range').innerHTML=
+      '<span>H</span> '+todayHigh+'°  <span>L</span> '+todayLow+'°';
+
+    var tmrInfo=weatherInfo(data.daily.weathercode[1]);
+    document.getElementById('tmr-icon').textContent=tmrInfo.icon;
+    document.getElementById('tmr-high').textContent=Math.round(data.daily.temperature_2m_max[1])+'°';
+    document.getElementById('tmr-low').textContent=Math.round(data.daily.temperature_2m_min[1])+'°';
+    document.getElementById('tmr-precip').textContent=(data.daily.precipitation_probability_max[1]||0)+'% rain';
+
     var now=new Date();
     document.getElementById('updated').textContent=
       String(now.getHours()).padStart(2,'0')+':'+String(now.getMinutes()).padStart(2,'0')+' updated';
 
-    var daily=data.daily;
-    var container=document.getElementById('forecast-row');
-    container.innerHTML='';
-    for(var i=1;i<=3;i++){
-      var date=new Date(daily.time[i]);
-      var dow=weekdays[date.getDay()];
-      var fi=weatherInfo(daily.weathercode[i]);
-      var high=Math.round(daily.temperature_2m_max[i]);
-      var low=Math.round(daily.temperature_2m_min[i]);
-      var precip=daily.precipitation_probability_max[i]||0;
-      var el=document.createElement('div');
-      el.className='forecast-day';
-      el.innerHTML=
-        '<div class="fc-label">'+dow+'</div>'
-        +'<div class="fc-icon">'+fi.icon+'</div>'
-        +'<div class="fc-temps">'
-        +'<span class="fc-high">'+high+'°</span>'
-        +'<span class="fc-low">'+low+'°</span>'
-        +'</div>'
-        +'<div class="fc-precip">'+precip+'%</div>';
-      container.appendChild(el);
-    }
   } catch(e) {
     document.getElementById('cur-desc').textContent='N/A';
   }
