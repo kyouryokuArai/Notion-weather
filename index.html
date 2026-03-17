@@ -1,0 +1,126 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Weather</title>
+<link href="https://fonts.googleapis.com/css2?family=DM+Serif+Display&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+* { margin:0; padding:0; box-sizing:border-box; }
+html, body { background:#ffffff; height:100%; }
+body { font-family:'Inter',sans-serif; display:flex; justify-content:center; align-items:center; padding:16px; }
+.card {
+  width:100%; padding:36px 48px;
+  background:#141414; border-radius:20px; border:1px solid #2a2a2a;
+  display:flex; flex-direction:column; gap:24px;
+  position:relative; overflow:hidden;
+}
+.card::before {
+  content:''; position:absolute; top:-60px; right:-60px;
+  width:220px; height:220px;
+  background:radial-gradient(circle, rgba(57,255,20,0.04) 0%, transparent 70%);
+  pointer-events:none;
+}
+.top-row { display:flex; flex-direction:column; gap:4px; }
+.city { font-size:10px; font-weight:400; letter-spacing:0.25em; color:#ff66a8; text-transform:uppercase; }
+.label { font-size:11px; font-weight:500; letter-spacing:0.3em; color:#ffff00; text-transform:uppercase; text-shadow:0 0 8px rgba(255,255,0,0.7); }
+.current-row { display:flex; align-items:center; gap:24px; }
+.weather-icon { font-size:64px; line-height:1; }
+.current-info { display:flex; flex-direction:column; gap:6px; }
+.current-temp { font-family:'DM Serif Display',serif; font-size:80px; line-height:1; color:#f0f0f0; letter-spacing:-4px; }
+.current-temp sup { font-size:32px; vertical-align:super; color:#888; }
+.current-desc { font-size:11px; letter-spacing:0.2em; color:#00cfff; text-transform:uppercase; text-shadow:0 0 8px rgba(0,207,255,0.6); }
+.divider { height:1px; background:#888; opacity:0.4; }
+.forecast-row { display:flex; justify-content:space-between; gap:12px; }
+.forecast-day { flex:1; display:flex; flex-direction:column; align-items:center; gap:8px; padding:16px 8px; background:#1a1a1a; border-radius:12px; border:1px solid #2a2a2a; }
+.fc-label { font-size:9px; letter-spacing:0.2em; color:#00cfff; text-transform:uppercase; text-shadow:0 0 6px rgba(0,207,255,0.5); }
+.fc-icon { font-size:28px; }
+.fc-temps { display:flex; gap:8px; align-items:center; }
+.fc-high { font-size:14px; font-weight:500; color:#f0f0f0; }
+.fc-low { font-size:12px; font-weight:300; color:#555; }
+.fc-precip { font-size:9px; color:#39ff14; letter-spacing:0.1em; text-shadow:0 0 6px rgba(57,255,20,0.5); }
+</style>
+</head>
+<body>
+<div class="card">
+  <div class="top-row">
+    <div class="city">Kofu, Japan</div>
+    <div class="label">Weather</div>
+  </div>
+  <div class="current-row">
+    <div class="weather-icon" id="cur-icon">—</div>
+    <div class="current-info">
+      <div class="current-temp" id="cur-temp">—<sup>°</sup></div>
+      <div class="current-desc" id="cur-desc">Loading...</div>
+    </div>
+  </div>
+  <div class="divider"></div>
+  <div class="forecast-row" id="forecast-row"></div>
+</div>
+<script>
+var LAT=35.6635, LON=138.5684;
+var weekdays=["Sun","Mon","Tue","Wed","Thu","Fri","Sat"];
+
+function weatherInfo(code){
+  if(code===0)  return {icon:'☀️', desc:'Clear'};
+  if(code<=2)   return {icon:'🌤️', desc:'Partly Cloudy'};
+  if(code===3)  return {icon:'☁️', desc:'Cloudy'};
+  if(code<=49)  return {icon:'🌫️', desc:'Foggy'};
+  if(code<=59)  return {icon:'🌦️', desc:'Drizzle'};
+  if(code<=69)  return {icon:'🌧️', desc:'Rain'};
+  if(code<=79)  return {icon:'❄️', desc:'Snow'};
+  if(code<=82)  return {icon:'🌧️', desc:'Showers'};
+  if(code<=86)  return {icon:'🌨️', desc:'Snow Showers'};
+  if(code<=99)  return {icon:'⛈️', desc:'Thunderstorm'};
+  return {icon:'🌡️', desc:'Unknown'};
+}
+
+async function fetchWeather(){
+  try {
+    var url='https://api.open-meteo.com/v1/forecast'
+      +'?latitude='+LAT+'&longitude='+LON
+      +'&current=temperature_2m,weathercode'
+      +'&daily=weathercode,temperature_2m_max,temperature_2m_min,precipitation_probability_max'
+      +'&timezone=Asia%2FTokyo'
+      +'&forecast_days=4';
+    var res=await fetch(url);
+    var data=await res.json();
+
+    var cur=data.current;
+    var info=weatherInfo(cur.weathercode);
+    document.getElementById('cur-icon').textContent=info.icon;
+    document.getElementById('cur-temp').innerHTML=Math.round(cur.temperature_2m)+'<sup>°</sup>';
+    document.getElementById('cur-desc').textContent=info.desc;
+
+    var daily=data.daily;
+    var container=document.getElementById('forecast-row');
+    container.innerHTML='';
+    for(var i=1;i<=3;i++){
+      var date=new Date(daily.time[i]);
+      var dow=weekdays[date.getDay()];
+      var fi=weatherInfo(daily.weathercode[i]);
+      var high=Math.round(daily.temperature_2m_max[i]);
+      var low=Math.round(daily.temperature_2m_min[i]);
+      var precip=daily.precipitation_probability_max[i]||0;
+      var el=document.createElement('div');
+      el.className='forecast-day';
+      el.innerHTML=
+        '<div class="fc-label">'+dow+'</div>'
+        +'<div class="fc-icon">'+fi.icon+'</div>'
+        +'<div class="fc-temps">'
+        +'<span class="fc-high">'+high+'°</span>'
+        +'<span class="fc-low">'+low+'°</span>'
+        +'</div>'
+        +'<div class="fc-precip">'+precip+'% rain</div>';
+      container.appendChild(el);
+    }
+  } catch(e) {
+    document.getElementById('cur-desc').textContent='N/A';
+  }
+}
+
+fetchWeather();
+setInterval(fetchWeather,600000);
+</script>
+</body>
+</html>
